@@ -3,13 +3,14 @@
 #include <time.h>
 #include <stdlib.h>
 
+// Constantes básicas usadas no programa
 #define NUM_MAX_SALAS 10
 #define NUM_MAX_THREADS 30
 #define NUM_INFO_BASICAS_DA_THREAD 3
-
 #define NUM_MAXIMO_DE_SALAS_VISITADAS 60
 #define NUM_DE_INFO_POR_VISITA 2
 
+//  Variáveis globais usadas no programa
 int numSalas, numThreads;
 
 int matrizDeControleDasThreads[NUM_MAX_THREADS][NUM_INFO_BASICAS_DA_THREAD];
@@ -20,9 +21,11 @@ int numDeThreadsDentroDaSala[NUM_MAX_SALAS + 1] = {0};
 int numDeThreadsEsperandoPraEntrarNaSala[NUM_MAX_SALAS + 1] = {0};
 int vagasNoTrioDeThreadsPraEntrar[NUM_MAX_SALAS + 1] = {0};
 
+// Variáveis globais de sincronização
 pthread_mutex_t controleDasSalas = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condicaoDaSala[NUM_MAX_SALAS + 1];
 
+// Assinatura das funções utilizadas
 void passa_tempo(int tid, int sala, int decimos);
 void* trabaioDaThread(void* arg);
 void* entraNaSala(int arg);
