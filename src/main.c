@@ -20,6 +20,10 @@ void passa_tempo(int tid, int sala, int decimos);
 
 void* trabaioDaThread(void* arg);
 
+void* entraNaSala(void* arg);
+
+void* saiDaSala(void* arg);
+
 int main(int argc, char** argv) {
   
     // leituras iniciais para criação da matriz de controle de threads
@@ -120,19 +124,52 @@ void passa_tempo(int tid, int sala, int decimos)
     printf("%3d ) %2d @%2d\n",tstamp,tid,sala);
 }
 
+// Rotina de cada thread
 void* trabaioDaThread(void* arg) {
     
     long indiceDaThread = (long) arg;
 
+    // Obtendo informações da thread
     int idDaThread = matrizDeControleDasThreads[indiceDaThread][0];
     int tempoDeEspera = matrizDeControleDasThreads[indiceDaThread][1];
     int quantidadeDeSalasPraVisitar = matrizDeControleDasThreads[indiceDaThread][2];
 
     passa_tempo(idDaThread, 0, tempoDeEspera);
-    
-    for (int k = 0; k < quantidadeDeSalasPraVisitar; k++) {
-        
+
+    // Verificação pra saber existe a primeira sala e se pode fazer o trabaio 
+    if (quantidadeDeSalasPraVisitar <= 0){
+        return NULL;
     }
+
+    // Variáveis para ajudar na iteração entre as salas
+    int idDaSalaDaVez;
+    int tempoNaSalaDaVez;
+    int idDaSalaAntiga;
+
+    // Primeiro trabaio, fora do loop pra não ter que verificar se é a primeira em toda iteração do loop
+    idDaSalaDaVez = matrizDeVisitasDasThreads[indiceDaThread][0][0];
+    tempoNaSalaDaVez = matrizDeVisitasDasThreads[indiceDaThread][0][1];
+
+    entraNaSala(idDaSalaDaVez);
+    passa_tempo(idDaThread, idDaSalaDaVez, tempoNaSalaDaVez);
+    
+    idDaSalaAntiga = idDaSalaDaVez;
+
+    // Loop para todas as salas que não são a primeira
+    for (int k = 1; k < quantidadeDeSalasPraVisitar; k++) {
+        idDaSalaDaVez = matrizDeVisitasDasThreads[indiceDaThread][k][0];
+        tempoNaSalaDaVez = matrizDeVisitasDasThreads[indiceDaThread][k][1];
+
+        // Rotina principal
+        entraNaSala(idDaSalaDaVez);
+        saiDaSala(idDaSalaAntiga);
+        passa_tempo(idDaThread, idDaSalaDaVez, tempoNaSalaDaVez);
+
+        idDaSalaAntiga = idDaSalaDaVez;
+    }
+
+    // Garante que a thread sai da sala que estava 
+    saiDaSala(idDaSalaAntiga);
 
     return NULL;
 }
