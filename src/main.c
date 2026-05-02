@@ -25,8 +25,8 @@ pthread_cond_t condicaoDaSala[NUM_MAX_SALAS + 1];
 
 void passa_tempo(int tid, int sala, int decimos);
 void* trabaioDaThread(void* arg);
-void* entraNaSala(void* arg);
-void* saiDaSala(void* arg);
+void* entraNaSala(int arg);
+void* saiDaSala(int arg);
 
 int main(int argc, char** argv) {
   
@@ -164,6 +164,16 @@ void* trabaioDaThread(void* arg) {
 
     // Faz a thread saie da última sala em que estava 
     saiDaSala(idDaSalaAntiga);
+
+    return NULL;
+}
+
+void* entraNaSala(int idDaSala) {
+
+    return NULL;
+}
+
+void* saiDaSala(int idDaSala) {
 
     return NULL;
 }
