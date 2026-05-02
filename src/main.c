@@ -10,18 +10,22 @@
 #define NUM_MAXIMO_DE_SALAS_VISITADAS 60
 #define NUM_DE_INFO_POR_VISITA 2
 
-int matrizDeControleDasThreads[NUM_MAX_THREADS][NUM_INFO_BASICAS_DA_THREAD];
-
-int matrizDeVisitasDasThreads[NUM_MAX_THREADS][NUM_MAXIMO_DE_SALAS_VISITADAS][NUM_DE_INFO_POR_VISITA];
-
 int numSalas, numThreads;
 
+int matrizDeControleDasThreads[NUM_MAX_THREADS][NUM_INFO_BASICAS_DA_THREAD];
+int matrizDeVisitasDasThreads[NUM_MAX_THREADS][NUM_MAXIMO_DE_SALAS_VISITADAS][NUM_DE_INFO_POR_VISITA];
+
+// Aqui usamos o '+1' pra poder usar o indice da sala diretamente pra acessar o vetor, é um recurso diferente mas achei legal quando aprendi
+int numDeThreadsDentroDaSala[NUM_MAX_SALAS + 1] = {0};
+int numDeThreadsEsperandoPraEntrarNaSala[NUM_MAX_SALAS + 1] = {0};
+int vagasNoTrioDeThreadsPraEntrar[NUM_MAX_SALAS + 1] = {0};
+
+pthread_mutex_t controleDasSalas = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t condicaoDaSala[NUM_MAX_SALAS + 1];
+
 void passa_tempo(int tid, int sala, int decimos);
-
 void* trabaioDaThread(void* arg);
-
 void* entraNaSala(void* arg);
-
 void* saiDaSala(void* arg);
 
 int main(int argc, char** argv) {
@@ -36,6 +40,10 @@ int main(int argc, char** argv) {
         for (int j = 0; j < NUM_INFO_BASICAS_DA_THREAD; j++) {
             matrizDeControleDasThreads[i][j] = 0;
         }
+    }
+
+    for (int k = 0; k < NUM_MAX_SALAS + 1; k++){
+        condicaoDaSala[k] = PTHREAD_COND_INITIALIZER;
     }
 
     // armazenando as informações das threads
