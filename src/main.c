@@ -68,20 +68,6 @@ int main(int argc, char** argv) {
             exit(1);
         }
     }
-    
-    // Prints para depurar o trem
-    // for (int i = 0; i < numThreads; i++) {
-    //     for (int j = 0; j < NUM_INFO_BASICAS_DA_THREAD; j++) {
-    //         printf("%d ", matrizDeControleDasThreads[i][j]);
-    //     }
-    //     printf("\n");
-    //         for (int m = 0; m < matrizDeControleDasThreads[i][2]; m++) {
-    //                 printf("%d %d \n", 
-    //                     matrizDeVisitasDasThreads[i][m][0], 
-    //                     matrizDeVisitasDasThreads[i][m][1]);
-    //     }
-    //     printf("\n");
-    // }
 
     // Juntando as threads para esperarem que todas acabem antes do programa encerrar
     for(int i = 0; i < numThreads; i++) {
@@ -168,7 +154,7 @@ void* trabaioDaThread(void* arg) {
         idDaSalaAntiga = idDaSalaDaVez;
     }
 
-    // Garante que a thread sai da sala que estava 
+    // Faz a thread saie da última sala em que estava 
     saiDaSala(idDaSalaAntiga);
 
     return NULL;
