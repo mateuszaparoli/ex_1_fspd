@@ -19,7 +19,7 @@ int matrizDeVisitasDasThreads[NUM_MAX_THREADS][NUM_MAXIMO_DE_SALAS_VISITADAS][NU
 // Aqui usamos o '+1' pra poder usar o indice da sala diretamente pra acessar o vetor, é um recurso diferente mas achei legal quando aprendi
 int numDeThreadsDentroDaSala[NUM_MAX_SALAS + 1] = {0};
 int numDeThreadsEsperandoPraEntrarNaSala[NUM_MAX_SALAS + 1] = {0};
-int vagasNoTrioDeThreadsPraEntrar[NUM_MAX_SALAS + 1] = {0};
+int vagasNoTrioDeThreads[NUM_MAX_SALAS + 1] = {0};
 
 // Variáveis globais de sincronização
 pthread_mutex_t controleDasSalas = PTHREAD_MUTEX_INITIALIZER;
@@ -171,12 +171,55 @@ void* trabaioDaThread(void* arg) {
     return NULL;
 }
 
-void* entraNaSala(int idDaSala) {
 
+// Função que cuida dos estados e variaveis para quando uma thread quer entrar em uma sala
+void* entraNaSala(int idDaSala) {
+    // Primeiro trancamos o mutex para poder ler e manipular as variáveis
+    pthread_mutex_lock(&controleDasSalas);
+
+    // Agora dizemos que a thread em questão está querendo entrar na sala
+    numDeThreadsEsperandoPraEntrarNaSala[idDaSala] += 1;
+
+    // Aqui tem-se o loop princpal da entrada, enquanto não temos vagas não acordamos, se juntamos uma quantidade sudiciente aumentamos
+    // as vagas e entramos
+    while(vagasNoTrioDeThreads[idDaSala] <= 0) {
+
+        // A thread tem as condições para abrir vagas no trio?
+        if (numDeThreadsEsperandoPraEntrarNaSala[idDaSala] >= 3 
+        && numDeThreadsDentroDaSala[idDaSala] == 0 
+        && vagasNoTrioDeThreads[idDaSala] == 0) {
+            // Se sim, abre as vagas e avisa às outras que estão esperando e sai do loop
+            vagasNoTrioDeThreads[idDaSala] = 3;
+            pthread_cond_broadcast(&condicaoDaSala[idDaSala]);
+            break;
+        }
+
+        // Se não, dorme, libera o mutex e espera
+        pthread_cond_wait(&condicaoDaSala[idDaSala], &controleDasSalas)
+    }
+
+    // Aqui mudamos as os para dizer que entramos com essa thread 
+    numDeThreadsEsperandoPraEntrarNaSala[idDaSala] -= 1;
+    vagasNoTrioDeThreads[idDaSala] -= 1;
+    numDeThreadsDentroDaSala[idDaSala] += 1;
+
+    // Destracamos o controle da thread
+    pthread_mutex_unlock(&controleDasSalas);
     return NULL;
 }
 
+// Função que cuida dos estados e variaveis para quando uma thread quer sair em uma sala
 void* saiDaSala(int idDaSala) {
+    // Primeiro trancamos o mutex para poder ler e manipular as variáveis
+    pthread_mutex_lock(&controleDasSalas);
+    numDeThreadsDentroDaSala[idDaSala] -= 1;
 
+    // Se foi a ultima a sair avisa às threads que possam querer entrar
+    if(numDeThreadsDentroDaSala[idDaSala] == 0) {
+        pthread_cond_broadcast(&condicaoDaSala[idDaSala]);
+    }
+
+    // Destracamos o controle da thread
+    pthread_mutex_unlock(&controleDasSalas);
     return NULL;
 }
